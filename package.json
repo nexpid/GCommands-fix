@@ -23,7 +23,6 @@
   "homepage": "https://github.com/Gabe616/GCommands-fix#readme",
   "dependencies": {
     "discord.js": "^14.7.1",
-    "gcommands": "^10.0.0",
-    "kleur": "^4.1.5"
+    "gcommands": "^10.0.0"
   }
 }

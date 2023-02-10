@@ -1,9 +1,16 @@
+const { CommandInteractionOptionResolver } = require("discord.js");
 const {
   Listener,
   Commands,
   CommandType,
   CommandContext,
+  ArgumentType,
+  Logger,
+  Events,
 } = require("gcommands");
+const GUtil = require("gcommands/dist/lib/util/Util").Util;
+const base =
+  require("gcommands/dist/lib/structures/arguments/base").MessageArgumentTypeBase;
 const { Interaction, Context } = require("./classes");
 
 module.exports = (that) => {
@@ -19,7 +26,7 @@ module.exports = (that) => {
         )
           return;
 
-        let [cmd, ...argument] = message.content
+        let [cmd, ...farguments] = message.content
           .slice(that.client.messagePrefix.length)
           .split(/ +/g);
 
@@ -32,18 +39,149 @@ module.exports = (that) => {
 
         if (!command.type.includes(CommandType.MESSAGE)) return;
         if (!command.dmPermission && !message.guild && !message.guildId) return;
+        if (command.defaultMemberPermissions && !message.guild) return;
         if (
           command.defaultMemberPermissions &&
-          (!message.guild ||
-            (message.member &&
-              !message.member.permissions.has(defaultMemberPermissions)))
+          !message.member.permissions.has(defaultMemberPermissions)
         )
           return;
 
-        let interaction = new Interaction(that.gfix, message, command);
-        let ctx = new Context(that.gfix, interaction);
+        let interaction = new Interaction(that, message, command);
+        let ctx = new Context(that, interaction);
+        if (!(await command.inhibit(ctx))) return;
 
-        // TODO: finish this!!
+        let argz = [];
+        let writeTo = argz;
+
+        let argRoot = command.arguments ?? [];
+        let fargs = farguments.slice();
+        let offset = 0;
+
+        let hasSCGroup = !!argRoot.find(
+          (x) => x.type == ArgumentType.SUB_COMMAND_GROUP
+        );
+        if (hasSCGroup) {
+          let validSCgroup = argRoot.find(
+            (x) => x.name.toLowerCase() === fargs[0].toLowerCase()
+          );
+          if (!validSCgroup)
+            return message.reply({
+              content: that.getResponse(that.responses.INVALID_SUBCOMMAND, {
+                pos: offset + 1,
+                options: argRoot.map((x) => x.name),
+              }),
+            });
+
+          offset++;
+          argRoot = validSCgroup.arguments;
+          fargs = fargs.slice(1);
+
+          let obj = {
+            name: validSCgroup.name,
+            description: validSCgroup.description,
+            type: validSCgroup.type,
+            options: [],
+          };
+          argz.push(obj);
+          writeTo = obj.options;
+        }
+
+        let hasSC = !!argRoot.find((x) => x.type == ArgumentType.SUB_COMMAND);
+        if (hasSC) {
+          let validSC = argRoot.find(
+            (x) => x.name.toLowerCase() === fargs[0].toLowerCase()
+          );
+          if (!validSC)
+            return message.reply({
+              content: that.getResponse(that.responses.INVALID_SUBCOMMAND, {
+                pos: offset + 1,
+                options: argRoot.map((x) => x.name),
+              }),
+            });
+
+          offset++;
+          argRoot = validSC.arguments;
+          fargs = fargs.slice(1);
+
+          let obj = {
+            name: validSCgroup.name,
+            description: validSCgroup.description,
+            type: validSCgroup.type,
+            options: [],
+          };
+          argz.push(obj);
+          writeTo = obj.options;
+        }
+
+        let i = -1;
+        for (let aa of argRoot) {
+          i++;
+          let frg = fargs[i];
+          if (!aa.required && !frg) continue;
+
+          let Arg = await base.createArgument(aa.type, message.guild);
+
+          if (!frg)
+            return message.reply({
+              content: that.getResponse(that.responses.MISSING_ARG, {
+                pos: offset + i,
+                name: aa.name,
+              }),
+            });
+          if (!Arg.validate(frg))
+            return message.reply({
+              content: that.getResponse(that.responses.INVALID_ARG, {
+                pos: offset + i,
+                name: aa.name,
+              }),
+            });
+
+          let rg = Arg.resolve(aa);
+          rg.type = ArgumentType[rg.type] || rg.type;
+
+          if (rg.type == ArgumentType.INTEGER)
+            rg.value = Math.floor(Number(rg.value));
+          else if (rg.type == ArgumentType.NUMBER) rg.value = Number(rg.value);
+
+          writeTo.push(rg);
+        }
+
+        let arguments = new CommandInteractionOptionResolver(
+          message.client,
+          argz,
+          {}
+        );
+        ctx.arguments = arguments;
+
+        await Promise.resolve(command.run(ctx))
+          .catch(async (error) => {
+            Logger.emit(Events.HANDLER_ERROR, ctx, error);
+            Logger.emit(Events.COMMAND_HANDLER_ERROR, ctx, error);
+            Logger.error(
+              typeof error.code !== "undefined" ? error.code : "",
+              error.message
+            );
+            if (error.stack) Logger.trace(error.stack);
+            const errorReply = async () =>
+              ctx.safeReply({
+                content: await GUtil.getResponse("ERROR", { client }),
+                components: [],
+              });
+            if (typeof command.onError === "function") {
+              await Promise.resolve(command.onError(ctx, error)).catch(
+                async () => await errorReply()
+              );
+            } else {
+              await errorReply();
+            }
+          })
+          .then(() => {
+            Logger.emit(Events.HANDLER_RUN, ctx);
+            Logger.emit(Events.COMMAND_HANDLER_RUN, ctx);
+            Logger.debug(
+              `Successfully ran message command (${command.name}) for ${message.author.username}`
+            );
+          });
       },
     })
   );

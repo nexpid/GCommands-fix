@@ -28,4 +28,6 @@ export interface GFixOptions {
   ephemeral: GFixEphemeralBehaviour;
   /** The message that shows up when a response gets deferred */
   thinking: string;
+  /** An object with responses (check responses.js!) */
+  responses: object;
 }

@@ -6,7 +6,7 @@ module.exports.Context = class Context extends CommandContext {
       interaction,
       message: interaction.message,
       command: interaction.command,
-      arguments: null, // TODO: make arguments work
+      arguments: null, // gets assigned later
       deferReply: interaction.deferReply,
       deleteReply: interaction.deleteReply,
       editReply: interaction.editReply,

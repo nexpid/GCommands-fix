@@ -1,6 +1,8 @@
 const assert = require("node:assert");
 const kleur = require("kleur");
 const fixer = require("./fixer.js");
+const responses = require("./responses.js");
+const { Logger } = require("gcommands");
 
 module.exports.GFix = class GFix {
   constructor(client, options) {
@@ -17,8 +19,8 @@ module.exports.GFix = class GFix {
     options.log = options.log ?? true;
     options.ephemeral = options.ephemeral ?? "CHANNEL";
     options.thinking = options.thinking ?? `*{CLIENT} is thinking...*`;
+    options.responses = options.responses ?? responses;
 
-    this.client = client;
     this.options = options;
 
     client.gfixOptions = {};
@@ -26,7 +28,7 @@ module.exports.GFix = class GFix {
 
     fixer(this);
 
-    if (this.cLog) this.log(`Ready!`);
+    if (this.cLog) Logger.info(`GFix Ready!`);
   }
 
   makeThinking() {
@@ -36,30 +38,35 @@ module.exports.GFix = class GFix {
     );
   }
 
+  getResponse(thi, obj) {
+    let rp;
+    try {
+      rp = thi(obj);
+    } catch {
+      return `Failed to get response!`;
+    }
+
+    return rp.toString();
+  }
+
+  deepArgSearch(args, filter) {
+    let perform = (x) => {
+      for (let y of x) {
+        if (filter(y)) return y;
+        else if (y.arguments) return perform(y.arguments);
+      }
+      return;
+    };
+
+    return perform(args);
+  }
+
   async ephemeralify(message, options) {
     if (options.ephemeral) {
       if (this.options.ephemeral === "DM")
         return await message.author.send(options);
       else return await message.reply(options);
     } else return await message.reply(options);
-  }
-
-  time() {
-    let date = new Date();
-    return `${date.getHours().toString().padStart(2, "0")}:${date
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
-  }
-
-  log(...a) {
-    console.log(`${kleur.blue(`[GFix/${this.time()}/LOG]`)} ${a.join(", ")}`);
-  }
-  error(...a) {
-    console.log(`${kleur.red(`[GFix/${this.time()}/ERROR]`)} ${a.join(", ")}`);
-  }
-  warn(...a) {
-    console.log(`${kleur.red(`[GFix/${this.time()}/WARN]`)} ${a.join(", ")}`);
   }
 
   get cLog() {
