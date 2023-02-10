@@ -13,7 +13,7 @@ npm i github:Gabe616/GCommands-fix --save
 ```js
 require("dotenv").config();
 const { GClient } = require("gcommands");
-const { GFix } = require("gcommands-fix");
+const { GFix, GFixEphemeralBehaviour } = require("gcommands-fix");
 
 const client = new GClient({
   dirs: [__dirname + "/src/commands"],
@@ -21,7 +21,11 @@ const client = new GClient({
   messagePrefix: "?",
   intents: [],
 });
-GFix(client);
+new GFix(client, {
+  log: true,
+  ephemeral: GFixEphemeralBehaviour.SendInChannel,
+  thinking: `*{CLIENT} is thinking...*`,
+});
 
 client.login(process.env.token);
 ```

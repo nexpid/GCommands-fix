@@ -1,5 +1,4 @@
 const assert = require("node:assert");
-const kleur = require("kleur");
 const fixer = require("./fixer.js");
 const responses = require("./responses.js");
 const { Logger } = require("gcommands");
@@ -8,11 +7,11 @@ module.exports.GFix = class GFix {
   constructor(client, options) {
     assert(
       client?.constructor?.name === "GClient",
-      new SyntaxError(`Expected argument #1 to be GClient`)
+      new SyntaxError(`expected argument #1 to be GClient`)
     );
     assert(
       typeof options === "object" ?? typeof options === "undefined",
-      new SyntaxError(`Expected argument #2 to be undefined or object`)
+      new SyntaxError(`expected argument #2 to be undefined or object`)
     );
 
     options = options ?? {};
