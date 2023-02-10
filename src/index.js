@@ -10,7 +10,7 @@ module.exports.GFix = class GFix {
       `expected argument #1 to be GClient`
     );
     assert(
-      typeof options === "object" ?? typeof options === "undefined",
+      typeof options === "object" || typeof options === "undefined",
       `expected argument #2 to be undefined or object`
     );
 
