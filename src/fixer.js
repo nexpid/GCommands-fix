@@ -40,15 +40,22 @@ module.exports = (that) => {
         if (!command.type.includes(CommandType.MESSAGE)) return;
         if (!command.dmPermission && !message.guild && !message.guildId) return;
         if (command.defaultMemberPermissions && !message.guild) return;
+
         if (
           command.defaultMemberPermissions &&
-          !message.member.permissions.has(defaultMemberPermissions)
+          !message.member.permissions.has(command.defaultMemberPermissions)
         )
           return;
 
-        let interaction = new Interaction(that, message, command);
+        /*        let member = message.guild
+                  ? await message.guild.members.fetch(message.author.id)
+                  : null;*/
+        let member = null;
+        let interaction = new Interaction(that, message, command, member);
         let ctx = new Context(that, interaction);
-        if (!(await command.inhibit(ctx))) return;
+
+        /*        let inh = await command.inhibit(ctx);
+        if (!inh) return;*/
 
         let argz = [];
         let writeTo = argz;
@@ -62,14 +69,17 @@ module.exports = (that) => {
         );
         if (hasSCGroup) {
           let validSCgroup = argRoot.find(
-            (x) => x.name.toLowerCase() === fargs[0].toLowerCase()
+            (x) => x.name.toLowerCase() === (fargs[0] || "").toLowerCase()
           );
           if (!validSCgroup)
             return message.reply({
-              content: that.getResponse(that.responses.INVALID_SUBCOMMAND, {
-                pos: offset + 1,
-                options: argRoot.map((x) => x.name),
-              }),
+              content: that.getResponse(
+                that.options.responses.INVALID_SUBCOMMAND,
+                {
+                  pos: offset + 1,
+                  options: argRoot.map((x) => x.name),
+                }
+              ),
             });
 
           offset++;
@@ -89,14 +99,17 @@ module.exports = (that) => {
         let hasSC = !!argRoot.find((x) => x.type == ArgumentType.SUB_COMMAND);
         if (hasSC) {
           let validSC = argRoot.find(
-            (x) => x.name.toLowerCase() === fargs[0].toLowerCase()
+            (x) => x.name.toLowerCase() === (fargs[0] || "").toLowerCase()
           );
           if (!validSC)
             return message.reply({
-              content: that.getResponse(that.responses.INVALID_SUBCOMMAND, {
-                pos: offset + 1,
-                options: argRoot.map((x) => x.name),
-              }),
+              content: that.getResponse(
+                that.options.responses.INVALID_SUBCOMMAND,
+                {
+                  pos: offset + 1,
+                  options: argRoot.map((x) => x.name),
+                }
+              ),
             });
 
           offset++;
@@ -104,9 +117,9 @@ module.exports = (that) => {
           fargs = fargs.slice(1);
 
           let obj = {
-            name: validSCgroup.name,
-            description: validSCgroup.description,
-            type: validSCgroup.type,
+            name: validSC.name,
+            description: validSC.description,
+            type: validSC.type,
             options: [],
           };
           argz.push(obj);
@@ -123,14 +136,14 @@ module.exports = (that) => {
 
           if (!frg)
             return message.reply({
-              content: that.getResponse(that.responses.MISSING_ARG, {
+              content: that.getResponse(that.options.responses.MISSING_ARG, {
                 pos: offset + i,
                 name: aa.name,
               }),
             });
           if (!Arg.validate(frg))
             return message.reply({
-              content: that.getResponse(that.responses.INVALID_ARG, {
+              content: that.getResponse(that.options.responses.INVALID_ARG, {
                 pos: offset + i,
                 name: aa.name,
               }),

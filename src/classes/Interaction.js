@@ -6,7 +6,7 @@ const {
 } = require("discord.js");
 
 module.exports.Interaction = class Interaction extends CommandInteraction {
-  constructor(gfix, message, gcommand) {
+  constructor(gfix, message, gcommand, member) {
     super(gfix.client, {
       type: 2,
       id: message.id,
@@ -15,7 +15,7 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
       channel_id: message.channel?.id ?? null,
       guild_id: message.guild?.id ?? null,
       user: message.author,
-      member: message.member,
+      member: member,
       version: 0,
       app_permissions: null,
       locale: message.guild.preferredLocale,
