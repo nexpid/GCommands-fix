@@ -7,11 +7,11 @@ module.exports.GFix = class GFix {
   constructor(client, options) {
     assert(
       client?.constructor?.name === "GClient",
-      new SyntaxError(`expected argument #1 to be GClient`)
+      `expected argument #1 to be GClient`
     );
     assert(
       typeof options === "object" ?? typeof options === "undefined",
-      new SyntaxError(`expected argument #2 to be undefined or object`)
+      `expected argument #2 to be undefined or object`
     );
 
     options = options ?? {};
