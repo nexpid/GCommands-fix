@@ -3,10 +3,10 @@ const {
   Listener,
   Commands,
   CommandType,
-  CommandContext,
   ArgumentType,
   Logger,
   Events,
+  ListenerManager,
 } = require("gcommands");
 const GUtil = require("gcommands/dist/lib/util/Util").Util;
 const base =
@@ -14,7 +14,7 @@ const base =
 const { Interaction, Context } = require("./classes");
 
 module.exports = (that) => {
-  that.client.listeners.register(
+  new ListenerManager().register(
     new Listener({
       name: "gfix-messageCommands",
       event: "messageCreate",
@@ -22,12 +22,12 @@ module.exports = (that) => {
         if (
           !message.content
             .toLowerCase()
-            .startsWith(that.client.messagePrefix.toLowerCase())
+            .startsWith(that.options.prefix.toLowerCase())
         )
           return;
 
         let [cmd, ...farguments] = message.content
-          .slice(that.client.messagePrefix.length)
+          .slice(that.options.prefix.length)
           .split(/ +/g);
 
         let command;

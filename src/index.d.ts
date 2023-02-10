@@ -22,6 +22,8 @@ export enum GFixEphemeralBehaviour {
 }
 
 export interface GFixOptions {
+  /** What prefix GFix should use */
+  prefix: string;
   /** Whether GFix should log to the console */
   log: boolean;
   /** The behaviour of ephemeral messages */

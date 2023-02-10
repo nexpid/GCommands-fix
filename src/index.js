@@ -19,11 +19,10 @@ module.exports.GFix = class GFix {
     options.ephemeral = options.ephemeral ?? "CHANNEL";
     options.thinking = options.thinking ?? `*{CLIENT} is thinking...*`;
     options.responses = options.responses ?? responses;
+    options.prefix = options.prefix ?? "!";
 
     this.options = options;
-
-    client.gfixOptions = {};
-    Object.defineProperties(client.gfixOptions, options);
+    this.client = client;
 
     fixer(this);
 
