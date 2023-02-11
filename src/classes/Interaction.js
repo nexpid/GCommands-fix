@@ -2,7 +2,6 @@ const {
   CommandInteraction,
   DiscordjsError,
   DiscordjsErrorCodes,
-  MessagePayload,
 } = require("discord.js");
 const { SnowflakeUtil } = require("discord.js/src/index.js");
 const crypto = require("node:crypto");
@@ -34,7 +33,6 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
     this.gcommand = gcommand;
     this.message = message;
     this.gfix = gfix;
-    this._reply = null;
 
     delete this.webhook;
   }
@@ -72,7 +70,7 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
     let reply = await this.interaction.gfix.ephemeralify(this.message, {
       content: this.interaction.gfix.makeThinking(),
     });
-    this._reply = reply;
+    this.msg = reply;
     this.deferred = true;
 
     return options.fetchReply ? this.fetchReply() : {};
@@ -83,44 +81,33 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
       throw new DiscordjsError(DiscordjsErrorCodes.InteractionAlreadyReplied);
     this.ephemeral = options.ephemeral ?? false;
 
-    let messagePayload;
-    if (options instanceof MessagePayload) messagePayload = options;
-    else messagePayload = MessagePayload.create(this, options);
-
-    const { body: data, files } = await messagePayload
-      .resolveBody()
-      .resolveFiles();
-
-    let reply = await this.interaction.gfix.ephemeralify(this.message, {
-      ...data,
-      files,
-    });
-    this._reply = reply;
+    let reply = await this.interaction.gfix.ephemeralify(this.message, options);
+    this.msg = reply;
     this.replied = true;
 
     return options.fetchReply ? this.fetchReply() : {};
   }
 
-  get fetchReply() {
-    return this._reply;
-  }
-
   async editReply(options) {
     if (!this.deferred && !this.replied)
-      throw new DiscordjsError(ErrorCodes.InteractionNotReplied);
-    const msg = await this._reply.edit(options);
+      throw new DiscordjsError(DiscordjsErrorCodes.InteractionNotReplied);
+    const msg = await this.msg.edit(options);
 
     this.replied = true;
     return msg;
   }
 
   async deleteReply() {
-    await this._reply.delete();
+    await this.msg.delete();
+  }
+
+  fetchReply() {
+    return this.msg;
   }
 
   async followUp(options) {
     if (!this.deferred && !this.replied)
-      throw new DiscordjsError(ErrorCodes.InteractionNotReplied);
-    return await this.message.reply(options);
+      throw new DiscordjsError(DiscordjsErrorCodes.InteractionNotReplied);
+    return await this.msg.reply(options);
   }
 };

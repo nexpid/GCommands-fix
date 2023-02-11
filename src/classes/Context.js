@@ -2,17 +2,18 @@ const { CommandContext } = require("gcommands");
 
 module.exports.Context = class Context extends CommandContext {
   constructor(gfix, interaction) {
+    let obj = {};
+    for (let x of Object.getOwnPropertyNames(interaction.prototype)) {
+      if (x === "constructor") continue;
+      obj[x] = interaction[x].bind(interaction);
+    }
+
     super(gfix.client, {
       interaction,
       message: interaction.message,
       command: interaction.command,
       arguments: null, // gets assigned later
-      deferReply: interaction.deferReply,
-      deleteReply: interaction.deleteReply,
-      editReply: interaction.editReply,
-      fetchReply: interaction.fetchReply,
-      followUp: interaction.followUp,
-      reply: interaction.reply,
+      ...obj,
 
       channel: interaction.message.channel,
       channelId: interaction.message.channel.id,
