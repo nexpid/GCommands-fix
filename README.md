@@ -1,11 +1,11 @@
 # GCommands-fix
 
-A [@Garlic-Team/GCommands](https://github.com/Garlic-Team/GCommands) Message Command fix.
+A [gcommands](https://www.npmjs.com/package/gcommands) Message Command fix.
 
 # Installation
 
 ```
-npm i github:Gabe616/GCommands-fix --save
+npm i gcommands-fix --save
 ```
 
 # Usage
