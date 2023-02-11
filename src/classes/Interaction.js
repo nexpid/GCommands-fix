@@ -16,7 +16,7 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
       data: undefined,
       guild_id: message.guild?.id,
       channel_id: message.channel.id,
-      member: message.member?.toJSON(),
+      member: message.member ? GuildMember(message.member) : undefined,
       user: User(message.author),
       token: crypto.randomBytes(20).toString("hex"),
       version: 1,
@@ -80,8 +80,6 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
     let messagePayload;
     if (options instanceof MessagePayload) messagePayload = options;
     else messagePayload = MessagePayload.create(this, options);
-
-    //768VCCbWFYZnFjP
 
     const { body: data, files } = await messagePayload
       .resolveBody()
