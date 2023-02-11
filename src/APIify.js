@@ -19,14 +19,14 @@ module.exports.GuildMember = function (member) {
     nick: member.nickname,
     avatar: member.avatar,
     roles: member._roles ?? [],
-    joined_at: member.joinedTimestamp?.toISOString(),
-    premium_since: member.premiumSinceTimestamp?.toISOString(),
+    joined_at: member.joinedAt?.toISOString(),
+    premium_since: member.premiumSince?.toISOString(),
     deaf: member.voice.deaf,
     mute: member.voice.mute,
     flags: user.flags,
     pending: member.pending,
     permissions: member.permissions.bitfield,
     communication_disabled_until:
-      member.communicationDisabledUntilTimestamp?.toISOString(),
+      member.communicationDisabledUntil?.toISOString(),
   };
 };

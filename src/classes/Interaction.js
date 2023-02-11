@@ -4,6 +4,7 @@ const {
   DiscordjsErrorCodes,
   MessagePayload,
 } = require("discord.js");
+const { SnowflakeUtil } = require("discord.js/src/index.js");
 const crypto = require("node:crypto");
 const { User, GuildMember } = require("../APIify.js");
 
@@ -11,9 +12,14 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
   constructor(gfix, message, gcommand) {
     super(gfix.client, {
       id: message.id,
-      application_id: gfix.client.application?.id,
+      application_id: gfix.client.application.id,
       type: 2,
-      data: undefined,
+      data: {
+        id: SnowflakeUtil.generate({ timestamp: Date.now() }),
+        name: gcommand.name,
+        type: 2,
+        guild_id: gfix.client.devGuildId,
+      },
       guild_id: message.guild?.id,
       channel_id: message.channel.id,
       member: message.member ? GuildMember(message.member) : undefined,
@@ -63,8 +69,8 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
       throw new DiscordjsError(DiscordjsErrorCodes.InteractionAlreadyReplied);
 
     this.ephemeral = options.ephemeral ?? false;
-    let reply = await this.gfix.ephemeralify(this.message, {
-      content: this.gfix.makeThinking(),
+    let reply = await this.interaction.gfix.ephemeralify(this.message, {
+      content: this.interaction.gfix.makeThinking(),
     });
     this._reply = reply;
     this.deferred = true;
@@ -85,7 +91,7 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
       .resolveBody()
       .resolveFiles();
 
-    let reply = await this.gfix.ephemeralify(this.message, {
+    let reply = await this.interaction.gfix.ephemeralify(this.message, {
       ...data,
       files,
     });

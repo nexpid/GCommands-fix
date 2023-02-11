@@ -47,6 +47,7 @@ module.exports.fix = (that) => {
         )
           return;
 
+        await message.client.application.fetch();
         let interaction = new Interaction(that, message, command);
         let ctx = new Context(that, interaction);
 
@@ -173,7 +174,9 @@ module.exports.fix = (that) => {
             if (error.stack) Logger.trace(error.stack);
             const errorReply = async () =>
               ctx.safeReply({
-                content: await GUtil.getResponse("ERROR", { client }),
+                content: await GUtil.getResponse("ERROR", {
+                  client: message.client,
+                }),
                 components: [],
               });
             if (typeof command.onError === "function") {

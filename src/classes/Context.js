@@ -1,7 +1,7 @@
 const { CommandContext } = require("gcommands");
 
 module.exports.Context = class Context extends CommandContext {
-  constructor(gfix, interaction, member) {
+  constructor(gfix, interaction) {
     super(gfix.client, {
       interaction,
       message: interaction.message,
@@ -20,7 +20,7 @@ module.exports.Context = class Context extends CommandContext {
       createdTimestamp: interaction.message.createdTimestamp,
       guild: interaction.message.guild,
       guildId: interaction.message.guild.id,
-      member: member,
+      member: interaction.member,
       user: interaction.message.author,
       userId: interaction.message.author.id,
       memberPermissions: interaction.gcommand.defaultMemberPermissions,
