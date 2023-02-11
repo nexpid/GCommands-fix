@@ -3,9 +3,12 @@ const { CommandContext } = require("gcommands");
 module.exports.Context = class Context extends CommandContext {
   constructor(gfix, interaction) {
     let obj = {};
-    for (let x of Object.getOwnPropertyNames(interaction.prototype)) {
-      if (x === "constructor") continue;
-      obj[x] = interaction[x].bind(interaction);
+    for (let x of Object.getOwnPropertyNames(
+      Object.getPrototypeOf(interaction)
+    )) {
+      let y = interaction[x];
+      if (x !== "constructor" && typeof y === "function")
+        obj[x] = y.bind(interaction);
     }
 
     super(gfix.client, {
