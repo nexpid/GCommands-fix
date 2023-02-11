@@ -4,35 +4,30 @@ const {
   DiscordjsErrorCodes,
   MessagePayload,
 } = require("discord.js");
+const crypto = require("node:crypto");
+const { User, GuildMember } = require("../APIify.js");
 
 module.exports.Interaction = class Interaction extends CommandInteraction {
-  constructor(gfix, message, gcommand, member) {
+  constructor(gfix, message, gcommand) {
     super(gfix.client, {
-      type: 2,
       id: message.id,
-      token: null,
-      application_id: gfix.client?.application?.id,
-      channel_id: message.channel?.id ?? null,
-      guild_id: message.guild?.id ?? null,
-      user: message.author,
-      member: member,
-      version: 0,
-      app_permissions: null,
-      locale: message.guild.preferredLocale,
-      guild_locale: message.guild.preferredLocale,
-
-      data: {
-        id: message.id,
-        name: gcommand.name,
-        type: 3,
-        guild_id: message.guild?.id ?? null,
-      },
+      application_id: gfix.client.application?.id,
+      type: 2,
+      data: undefined,
+      guild_id: message.guild?.id,
+      channel_id: message.channel.id,
+      member: message.member?.toJSON(),
+      user: User(message.author),
+      token: crypto.randomBytes(20).toString("hex"),
+      version: 1,
+      app_permissions: message.guild.members.me.permissions.bitfield.toString(),
+      locale: "en-US",
+      guild_locale: message.guild?.preferredLocale,
     });
 
     this.gcommand = gcommand;
     this.message = message;
     this.gfix = gfix;
-
     this._reply = null;
 
     delete this.webhook;
@@ -85,6 +80,8 @@ module.exports.Interaction = class Interaction extends CommandInteraction {
     let messagePayload;
     if (options instanceof MessagePayload) messagePayload = options;
     else messagePayload = MessagePayload.create(this, options);
+
+    //768VCCbWFYZnFjP
 
     const { body: data, files } = await messagePayload
       .resolveBody()

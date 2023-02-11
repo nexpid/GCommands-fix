@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "A GCommands Message Command fix",
   "main": "src/index.js",
-  "scripts": {
-    "test": "node test/index.js"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Gabe616/GCommands-fix.git"

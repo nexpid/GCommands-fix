@@ -1,6 +1,6 @@
 const assert = require("node:assert");
-const fixer = require("./fixer.js");
-const responses = require("./responses.js");
+const { fix } = require("./fixer.js");
+const { Responses } = require("./responses.js");
 const { Logger } = require("gcommands");
 
 module.exports.GFix = class GFix {
@@ -18,13 +18,13 @@ module.exports.GFix = class GFix {
     options.log = options.log ?? true;
     options.ephemeral = options.ephemeral ?? "CHANNEL";
     options.thinking = options.thinking ?? `*{CLIENT} is thinking...*`;
-    options.responses = options.responses ?? responses;
+    options.responses = options.responses ?? Responses;
     options.prefix = options.prefix ?? "!";
 
     this.options = options;
     this.client = client;
 
-    fixer(this);
+    fix(this);
 
     if (this.cLog) Logger.info(`GFix Ready!`);
   }

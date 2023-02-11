@@ -13,7 +13,7 @@ const base =
   require("gcommands/dist/lib/structures/arguments/base").MessageArgumentTypeBase;
 const { Interaction, Context } = require("./classes");
 
-module.exports = (that) => {
+module.exports.fix = (that) => {
   new ListenerManager().register(
     new Listener({
       name: "gfix-messageCommands",
@@ -47,15 +47,11 @@ module.exports = (that) => {
         )
           return;
 
-        /*        let member = message.guild
-                  ? await message.guild.members.fetch(message.author.id)
-                  : null;*/
-        let member = null;
-        let interaction = new Interaction(that, message, command, member);
+        let interaction = new Interaction(that, message, command);
         let ctx = new Context(that, interaction);
 
-        /*        let inh = await command.inhibit(ctx);
-        if (!inh) return;*/
+        let inh = await command.inhibit(ctx);
+        if (!inh) return;
 
         let argz = [];
         let writeTo = argz;
